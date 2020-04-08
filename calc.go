@@ -31,14 +31,19 @@ func splitIntoUnitAndAmount(str string) (string, float64) {
 }
 
 func run() error {
-	c, err := chatlog.New("_i_AxXSfceM")
+	if len(os.Args) != 2 {
+		fmt.Println("Usage: go run calc.go <video id>")
+		return nil
+	}
+
+	c, err := chatlog.New(os.Args[1])
 	if err != nil {
 		return err
 	}
 
 	m := make(map[string]float64)
 	p := message.NewPrinter(message.MatchLanguage("en"))
-	i := 0
+
 	for c.Continuation != "" {
 		resp, err := c.Fecth()
 		if err != nil {
@@ -61,12 +66,9 @@ func run() error {
 		for k, v := range m {
 			p.Printf(format+" ", k, v)
 		}
-		if i++; i > 10 {
-			break
-		}
 	}
 
-	fmt.Fprint(os.Stdout, "\r \r")
+	fmt.Print("\n\ntotal:\n")
 	for k, v := range m {
 		p.Printf(format+"\n", k, v)
 	}
