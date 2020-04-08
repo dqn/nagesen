@@ -32,7 +32,7 @@ func splitIntoUnitAndAmount(str string) (string, float64) {
 
 func run() error {
 	if len(os.Args) != 2 {
-		fmt.Println("Usage: go run calc.go <video id>")
+		fmt.Println("Usage: nagesen <video id>")
 		return nil
 	}
 

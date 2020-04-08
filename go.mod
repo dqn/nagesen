@@ -1,4 +1,4 @@
-module github.com/dqn/nagesen-calculator
+module github.com/dqn/nagesen
 
 go 1.14
 
