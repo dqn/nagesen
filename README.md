@@ -1,6 +1,6 @@
 # nagesen
 
-Calculate amount of super chat of YouTube Live archive
+Calculate amount of Super Chat in YouTube Live archive
 
 ## Usage
 
