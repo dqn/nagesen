@@ -1,76 +1,68 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
-	"unicode"
 
 	"github.com/dqn/chatlog"
 	"golang.org/x/text/message"
 )
 
-const format = "%s%.2f"
+func parseSuperChat(str string) (string, float64, error) {
+	unit := strings.TrimRight(str, "0123456789.,")
+	s := strings.TrimLeft(str, unit)
+	s = strings.ReplaceAll(s, ",", "")
+	amount, err := strconv.ParseFloat(s, 64)
+	unit = strings.TrimSpace(strings.ReplaceAll(unit, "￥", "¥"))
 
-func splitIntoUnitAndAmount(str string) (string, float64) {
-	r := []rune(str)
-	for i, v := range r {
-		if !unicode.IsDigit(v) {
-			continue
-		}
-		unit := strings.TrimSpace(string(r[:i]))
-		amount, err := strconv.ParseFloat(strings.ReplaceAll(string(r[i:]), ",", ""), 64)
-		if err != nil {
-			break
-		}
-		return unit, amount
-	}
-	return "", 0
+	return unit, amount, err
 }
 
 func run() error {
-	if len(os.Args) != 2 {
-		fmt.Println("Usage: nagesen <video id>")
-		return nil
+	flag.Parse()
+	flag.Usage = func() {
+		fmt.Println("Usage: nagesen <video-id>")
+	}
+	if flag.NArg() != 1 {
+		flag.Usage()
+		os.Exit(1)
 	}
 
-	c, err := chatlog.New(os.Args[1])
-	if err != nil {
-		return err
-	}
-
-	m := make(map[string]float64)
+	c := chatlog.New(flag.Arg(0))
+	m := make(map[string]float64, 16)
 	p := message.NewPrinter(message.MatchLanguage("en"))
 
-	for c.Continuation != "" {
-		resp, err := c.Fecth()
+	err := c.HandleChatItem(func(item *chatlog.ChatItem) error {
+		amountText := item.LiveChatPaidMessageRenderer.PurchaseAmountText.SimpleText
+		if amountText == "" {
+			return nil
+		}
+
+		unit, amount, err := parseSuperChat(amountText)
 		if err != nil {
 			return err
 		}
-		for _, continuationAction := range resp {
-			for _, chatAction := range continuationAction.ReplayChatItemAction.Actions {
-				amountText := chatAction.AddChatItemAction.Item.LiveChatPaidMessageRenderer.PurchaseAmountText.SimpleText
-				if amountText == "" {
-					continue
-				}
-				unit, amount := splitIntoUnitAndAmount(amountText)
-				if unit == "" || amount == 0 {
-					return fmt.Errorf("\ncannot parse %s\n", amountText)
-				}
-				m[unit] += amount
-			}
-		}
+
+		m[unit] += amount
+
 		fmt.Printf("\r")
 		for k, v := range m {
+			var format string
+			if k == "¥" {
+				format = "%s%.0f"
+			} else {
+				format = "%s%.2f"
+			}
 			p.Printf(format+" ", k, v)
 		}
-	}
 
-	fmt.Print("\n\ntotal:\n")
-	for k, v := range m {
-		p.Printf(format+"\n", k, v)
+		return nil
+	})
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -78,6 +70,8 @@ func run() error {
 
 func main() {
 	if err := run(); err != nil {
-		log.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
+	os.Exit(0)
 }

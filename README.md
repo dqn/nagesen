@@ -1,6 +1,6 @@
 # nagesen
 
-Calculate amount of Super Chat in YouTube Live archive
+Calculate amount of Super Chat in YouTube Live archive.
 
 ![](./docs/capture.gif)
 
@@ -13,7 +13,7 @@ $ go get github.com/dqn/nagesen
 ## Usage
 
 ```bash
-$ nagesen <video id>
+$ nagesen <video-id>
 ```
 
 ## License
