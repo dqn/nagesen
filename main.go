@@ -4,12 +4,19 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dqn/chatlog"
+	"github.com/gosuri/uilive"
+	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
+
+var writer = uilive.New()
+var printer = message.NewPrinter(language.English)
 
 // parseSuperChat returns unit, amount and error.
 func parseSuperChat(str string) (string, float64, error) {
@@ -21,6 +28,18 @@ func parseSuperChat(str string) (string, float64, error) {
 	}
 
 	return unit, amount, nil
+}
+
+func printCurrencies(currencies map[string]float64) {
+	keys := make([]string, 0, len(currencies))
+	for k := range currencies {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+	for _, key := range keys {
+		fmt.Fprintf(writer, "%s%s\n", key, printer.Sprintf("%.2f", currencies[key]))
+	}
 }
 
 func run() error {
@@ -36,35 +55,32 @@ func run() error {
 
 	videoID := flag.Arg(0)
 	c := chatlog.New(videoID)
-	currencies := make(map[string]float64, 8) // size is inferred currency types
-	p := message.NewPrinter(message.MatchLanguage("en"))
+	currencies := make(map[string]float64)
 
-	return c.HandleChatItem(func(item *chatlog.ChatItem) error {
-		amountText := item.LiveChatPaidMessageRenderer.PurchaseAmountText.SimpleText
-		if amountText == "" {
+	writer.Start()
+
+	err := c.HandleChatItem(func(item *chatlog.ChatItem) error {
+		amountStr := item.LiveChatPaidMessageRenderer.PurchaseAmountText.SimpleText
+		if amountStr == "" {
 			return nil
 		}
 
-		unit, amount, err := parseSuperChat(amountText)
+		unit, amount, err := parseSuperChat(amountStr)
 		if err != nil {
 			return err
 		}
 
 		currencies[unit] += amount
 
-		fmt.Printf("\r")
-		for k, v := range currencies {
-			var format string
-			if k == "¥" {
-				format = "%s%.0f"
-			} else {
-				format = "%s%.2f"
-			}
-			p.Printf(format+" ", k, v)
-		}
+		printCurrencies(currencies)
+		time.Sleep(time.Millisecond * 25) // wait for refreshing outputs
 
 		return nil
 	})
+
+	writer.Stop()
+
+	return err
 }
 
 func main() {
