@@ -11,14 +11,16 @@ import (
 	"golang.org/x/text/message"
 )
 
+// parseSuperChat returns unit, amount and error.
 func parseSuperChat(str string) (string, float64, error) {
 	unit := strings.TrimRight(str, "0123456789.,")
-	s := strings.TrimLeft(str, unit)
-	s = strings.ReplaceAll(s, ",", "")
-	amount, err := strconv.ParseFloat(s, 64)
-	unit = strings.TrimSpace(strings.ReplaceAll(unit, "￥", "¥"))
+	amountStr := strings.ReplaceAll(strings.TrimLeft(str, unit), ",", "")
+	amount, err := strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		return "", 0, err
+	}
 
-	return unit, amount, err
+	return unit, amount, nil
 }
 
 func run() error {
@@ -26,16 +28,18 @@ func run() error {
 	flag.Usage = func() {
 		fmt.Println("Usage: nagesen <video-id>")
 	}
+
 	if flag.NArg() != 1 {
 		flag.Usage()
-		os.Exit(1)
+		os.Exit(2)
 	}
 
-	c := chatlog.New(flag.Arg(0))
-	m := make(map[string]float64, 16)
+	videoID := flag.Arg(0)
+	c := chatlog.New(videoID)
+	currencies := make(map[string]float64, 8) // size is inferred currency types
 	p := message.NewPrinter(message.MatchLanguage("en"))
 
-	err := c.HandleChatItem(func(item *chatlog.ChatItem) error {
+	return c.HandleChatItem(func(item *chatlog.ChatItem) error {
 		amountText := item.LiveChatPaidMessageRenderer.PurchaseAmountText.SimpleText
 		if amountText == "" {
 			return nil
@@ -46,10 +50,10 @@ func run() error {
 			return err
 		}
 
-		m[unit] += amount
+		currencies[unit] += amount
 
 		fmt.Printf("\r")
-		for k, v := range m {
+		for k, v := range currencies {
 			var format string
 			if k == "¥" {
 				format = "%s%.0f"
@@ -61,11 +65,6 @@ func run() error {
 
 		return nil
 	})
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func main() {
@@ -73,5 +72,6 @@ func main() {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+
 	os.Exit(0)
 }
