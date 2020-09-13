@@ -1,8 +1,10 @@
 # nagesen
 
-Calculate amount of Super Chat in YouTube Live archive.
+[![build status](https://github.com/dqn/nagesen/workflows/build/badge.svg)](https://github.com/dqn/nagesen/actions)
 
-![](./docs/capture.gif)
+Calculate amount of Super Chat in YouTube Live archive. Premiered videos are also supported.
+
+![](./docs/demo.gif)
 
 ## Installation
 
