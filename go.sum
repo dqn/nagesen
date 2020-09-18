@@ -1,5 +1,5 @@
-github.com/dqn/chatlog v0.0.0-20200606192617-6641f6b2fc9f h1:oQ388FlmYlLFYklzEeWToFk5o4cOqiAEgBpjGeeiG7o=
-github.com/dqn/chatlog v0.0.0-20200606192617-6641f6b2fc9f/go.mod h1:zGROyJDGGUdOn+YAJ4vrn3Dr8IRocDeUc3GQB80zWWw=
+github.com/dqn/chatlog v1.1.0 h1:arP+IR2Jv0pPZeEzhwOywKBX/5kUH6WIgwEqN2eRBuo=
+github.com/dqn/chatlog v1.1.0/go.mod h1:zGROyJDGGUdOn+YAJ4vrn3Dr8IRocDeUc3GQB80zWWw=
 github.com/gosuri/uilive v0.0.4 h1:hUEBpQDj8D8jXgtCdBu7sWsy5sbW/5GhuO8KBwJ2jyY=
 github.com/gosuri/uilive v0.0.4/go.mod h1:V/epo5LjjlDE5RJUcqx8dbw+zc93y5Ya3yg8tfZ74VI=
 github.com/mattn/go-isatty v0.0.12 h1:wuysRhFDzyxgEmMf5xjvJ2M9dZoWAXNNr5LSBS7uHXY=

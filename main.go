@@ -59,8 +59,14 @@ func run() error {
 
 	writer.Start()
 
-	err := c.HandleChatItem(func(item *chatlog.ChatItem) error {
-		amountStr := item.LiveChatPaidMessageRenderer.PurchaseAmountText.SimpleText
+	err := c.HandleChat(func(renderer chatlog.ChatRenderer) error {
+		lcpmr, ok := renderer.(*chatlog.LiveChatPaidMessageRenderer)
+		if !ok {
+			return nil
+		}
+
+		amountStr := lcpmr.PurchaseAmountText.SimpleText
+
 		if amountStr == "" {
 			return nil
 		}
