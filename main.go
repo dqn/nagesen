@@ -15,8 +15,10 @@ import (
 	"golang.org/x/text/message"
 )
 
-var writer = uilive.New()
-var printer = message.NewPrinter(language.English)
+var (
+	writer  = uilive.New()
+	printer = message.NewPrinter(language.English)
+)
 
 // parseSuperChat returns unit, amount and error.
 func parseSuperChat(str string) (string, float64, error) {
@@ -58,6 +60,7 @@ func run() error {
 	currencies := make(map[string]float64)
 
 	writer.Start()
+	defer writer.Stop()
 
 	err := c.HandleChat(func(renderer chatlog.ChatRenderer) error {
 		lcpmr, ok := renderer.(*chatlog.LiveChatPaidMessageRenderer)
@@ -65,13 +68,7 @@ func run() error {
 			return nil
 		}
 
-		amountStr := lcpmr.PurchaseAmountText.SimpleText
-
-		if amountStr == "" {
-			return nil
-		}
-
-		unit, amount, err := parseSuperChat(amountStr)
+		unit, amount, err := parseSuperChat(lcpmr.PurchaseAmountText.SimpleText)
 		if err != nil {
 			return err
 		}
@@ -83,8 +80,6 @@ func run() error {
 
 		return nil
 	})
-
-	writer.Stop()
 
 	return err
 }
